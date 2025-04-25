@@ -86,7 +86,7 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
   }
 
   // Manejar la descarga del CSV con manejo de errores mejorado
-  const handleDownloadj = async (report) => {
+  const handleDownload = async (report) => {
     const url = getPropertyValue(report, "url")
     if (!url || url === "N/A") {
       toast.error("URL de descarga no disponible")
@@ -119,15 +119,6 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     }
   }
 
-  const handleDownload = (report) => {
-    const url = getPropertyValue(report, "url")
-    if (!url || url === "N/A") {
-      toast.error("URL de descarga no disponible")
-      return
-    }
-    onDownload(url)
-  }
-
   //Manejar la eliminacion de CSV
   const handleDelete = (report) => {
     setReportToDelete(report)
@@ -147,7 +138,7 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     deleteReport(id)
     setDeleteModalOpen(false)
     setReportToDelete(null)
-    //window.location.reload()
+    window.location.reload()
   }
 
 
