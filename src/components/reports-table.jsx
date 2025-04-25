@@ -94,13 +94,10 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     }
 
     try {
-      // Usar modo 'no-cors' para evitar el error CORS
       const response = await fetch(url, {
         mode: 'no-cors'
       })
       
-      // Nota: en modo 'no-cors' no podrás leer la respuesta ni verificar el estado
-      // Simplemente procedemos con la descarga
       onDownload(url)
     } catch (error) {
       console.error("Error al verificar el archivo:", error)
