@@ -94,30 +94,19 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     }
 
     try {
-      // Intenta descargar el archivo primero para verificar la autenticación
-      const response = await fetch(url)
+      // Usar modo 'no-cors' para evitar el error CORS
+      const response = await fetch(url, {
+        mode: 'no-cors'
+      })
       
-      if (!response.ok) {
-        // Si la respuesta es un XML (Azure Blob Storage error)
-        const responseText = await response.text()
-        if (responseText.includes('<Error>') && responseText.includes('AuthenticationFailed')) {
-          setAuthErrorModalOpen(true)
-          return
-        }
-        throw new Error(`Error: ${response.status}`)
-      }
-
-      // Si todo está bien, procede con la descarga
+      // Nota: en modo 'no-cors' no podrás leer la respuesta ni verificar el estado
+      // Simplemente procedemos con la descarga
       onDownload(url)
     } catch (error) {
       console.error("Error al verificar el archivo:", error)
-      if (error.message.includes("Failed to fetch")) {
-        setAuthErrorModalOpen(true)
-      } else {
-        toast.error("Error al descargar el reporte")
-      }
+      toast.error("Error al descargar el reporte")
     }
-  }
+}
 
   //Manejar la eliminacion de CSV
   const handleDelete = (report) => {
