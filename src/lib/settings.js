@@ -1,3 +1,4 @@
 export default {
-    URL: "https://api-pokeapi-dev-8a.azurewebsites.net",
+    URL: "http://localhost:8000",
+    //https://api-pokeapi-dev-8a.azurewebsites.net
 };

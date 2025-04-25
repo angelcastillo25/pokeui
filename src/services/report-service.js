@@ -48,12 +48,11 @@ export async function getReports() {
   export async function deleteReport(reportId) {
     try {
 
-        const response = await fetch(`${settings.URL}/api/request`, {
-            method: 'POST',
+        const response = await fetch(`${settings.URL}/api/request/${reportId}`, {
+            method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: reportId })
+            }
         });
 
         if (!response.ok) {
