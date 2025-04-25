@@ -3,6 +3,7 @@ import settings from "@/lib/settings";
 export async function getReports() {
     try {
       const response = await fetch(`${settings.URL}/api/request`)
+      
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status} - ${response.statusText}`)
@@ -47,12 +48,11 @@ export async function getReports() {
   export async function deleteReport(reportId) {
     try {
 
-        const response = await fetch(`${settings.URL}/api/delete-request`, {
-            method: 'POST',
+        const response = await fetch(`${settings.URL}/api/request/${reportId}`, {
+            method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: reportId })
+            }
         });
 
         if (!response.ok) {

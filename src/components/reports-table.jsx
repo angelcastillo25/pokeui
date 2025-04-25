@@ -15,6 +15,7 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
   const [sortDirection, setSortDirection] = useState("desc") // "desc" para descendente (más reciente primero)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [reportToDelete, setReportToDelete] = useState(null)
+  const [authErrorModalOpen, setAuthErrorModalOpen] = useState(false)
 
   // Ordenar los reportes cuando cambian o cuando cambia la dirección de ordenamiento
   useEffect(() => {
@@ -84,14 +85,38 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     return status && status.toLowerCase() === "completed"
   }
 
-  // Manejar la descarga del CSV
-  const handleDownload = (report) => {
+  // Manejar la descarga del CSV con manejo de errores mejorado
+  const handleDownload = async (report) => {
     const url = getPropertyValue(report, "url")
     if (!url || url === "N/A") {
       toast.error("URL de descarga no disponible")
       return
     }
-    onDownload(url)
+
+    try {
+      // Intenta descargar el archivo primero para verificar la autenticación
+      const response = await fetch(url)
+      
+      if (!response.ok) {
+        // Si la respuesta es un XML (Azure Blob Storage error)
+        const responseText = await response.text()
+        if (responseText.includes('<Error>') && responseText.includes('AuthenticationFailed')) {
+          setAuthErrorModalOpen(true)
+          return
+        }
+        throw new Error(`Error: ${response.status}`)
+      }
+
+      // Si todo está bien, procede con la descarga
+      onDownload(url)
+    } catch (error) {
+      console.error("Error al verificar el archivo:", error)
+      if (error.message.includes("Failed to fetch")) {
+        setAuthErrorModalOpen(true)
+      } else {
+        toast.error("Error al descargar el reporte")
+      }
+    }
   }
 
   //Manejar la eliminacion de CSV
@@ -99,6 +124,7 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     setReportToDelete(report)
     setDeleteModalOpen(true)
   }
+  
 
   const confirmDelete = () => {
     if (!reportToDelete) return
@@ -112,6 +138,7 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
     deleteReport(id)
     setDeleteModalOpen(false)
     setReportToDelete(null)
+    window.location.reload()
   }
 
 
@@ -256,6 +283,44 @@ export default function ReportsTable({ reports, loading, onRefresh, onDownload }
                 onClick={confirmDelete}
               >
                 Eliminar
+              </Button>
+            </div>
+          </Alert>
+        </div>
+      )}
+      {authErrorModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <Alert variant="destructive" className="w-full max-w-md relative">
+            <button 
+              onClick={() => setAuthErrorModalOpen(false)}
+              className="absolute top-3 right-3 p-1 rounded-full hover:bg-red-100/20"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            
+            <AlertTitle className="text-lg font-semibold">Error de autenticación</AlertTitle>
+            <AlertDescription className="mt-2">
+              No se pudo acceder al reporte porque el enlace de descarga ha expirado o no tiene los permisos necesarios.
+              Por favor, actualiza la lista de reportes y vuelve a intentarlo.
+            </AlertDescription>
+            
+            <div className="mt-4 flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setAuthErrorModalOpen(false)}
+              >
+                Cerrar
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => {
+                  setAuthErrorModalOpen(false)
+                  handleRefresh()
+                }}
+              >
+                Actualizar reportes
               </Button>
             </div>
           </Alert>
